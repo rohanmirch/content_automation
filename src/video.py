@@ -71,7 +71,7 @@ class Video:
 		
 		pexel_video_id = int(url.replace("/", "").split("-")[-1])
 		background_file = url.split("/")[-2] + ".mp4"
-		# print(f'pexel_video_id: {pexel_video_id}')
+		#print(f'pexel_video_id: {pexel_video_id}')
 
 		# If the file is already downloaded, we can end the function
 		if os.path.exists(backgrounds_path + background_file):
@@ -89,14 +89,19 @@ class Video:
 		#pprint.pprint(resp)
 
 		# Get the url to the video file that is the correct size.
+		# Note: Assumes a vertical video and seeks highest resolution (1080x1920)
 		v_files = resp['video_files']
 		v_link = ""
 		v_links = [v["link"] for v in v_files]
 		for v in v_files:
-			if v["quality"] == "hd" and v["width"] == 1080:
+			if v["quality"] == "hd":
 				v_link = v["link"]
+				if  v["width"] == 1080:
+					break
 
 		# Download URL
+		if v_link == "":
+			print("No pexels video download link found from given URL")
 		urllib.request.urlretrieve(v_link, backgrounds_path + background_file)
 		print(f"Downloaded {background_file}")
 		return background_file
@@ -171,7 +176,7 @@ class Video:
 			font='proximanova-extrabold'
 			kerning=-4
 			if i == 0 and title_is_first:
-				size = 100
+				size = 95
 				bg_color = "AntiqueWhite"
 				color = "black"
 				stroke_width = 3
@@ -179,7 +184,7 @@ class Video:
 				font='proximanova-semibold'
 				kerning=-2
 	
-			text_width = width-183             
+			text_width = width-175             
 			t_clip = TextClip(txt = t, 
 							size=(text_width, None), # Height will be auto-determined
 							color=color, 
