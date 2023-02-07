@@ -89,7 +89,8 @@ class Video:
 		#pprint.pprint(resp)
 
 		# Get the url to the video file that is the correct size.
-		# Note: Assumes a vertical video and seeks highest resolution (1080x1920)
+		# Assumes a vertical video and seeks highest resolution (1080x1920)
+		# TODO: Video creation code still doesn't work for 720x1080 because final size is the background size
 		v_files = resp['video_files']
 		v_link = ""
 		v_links = [v["link"] for v in v_files]
@@ -176,7 +177,7 @@ class Video:
 			font='proximanova-extrabold'
 			kerning=-4
 			if i == 0 and title_is_first:
-				size = 95
+				size = 92
 				bg_color = "AntiqueWhite"
 				color = "black"
 				stroke_width = 3
