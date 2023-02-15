@@ -20,6 +20,7 @@ from moviepy.video.compositing.CompositeVideoClip import *
 from moviepy.editor import *
 from moviepy.audio.fx.all import *
 from apiclient.http import MediaFileUpload
+from gtts_util import *
 
 from gtts import gTTS
 
@@ -28,6 +29,7 @@ PEXEL_API_KEY = '563492ad6f917000010000011d2a823f8f9f41ecbd8ed2f5bcc381ab'
 AUDIO_FPS = 44100
 PUBLISH_TIME = 17 # 5 pm
 UTC_TIME_DIFF = 8 # UTC is 8 hours ahead
+SIZE = (1080,1920) # Final video size
 
 # Youtube info for facts101 channel
 CHANNEL_ID = "UCuvWt72OMRF5xp6H9VBdmLw"
@@ -147,11 +149,11 @@ class Video:
 		text_clip = self.__create_text_clip(self.content["texts"], width)		
 
 		# Combine text clip with background video
-		clip = CompositeVideoClip([bg_clip, text_clip.set_position(("center",height*0.17))], use_bgclip = True)
+		clip = CompositeVideoClip([bg_clip, text_clip], use_bgclip = True)
 
 		# Add music to clip
 		music = music.set_duration(clip.duration).fx(audio_fadein, 0.4)
-		comp_audio = mpy.CompositeAudioClip([music, clip.audio.fx(volumex, 1.4)])
+		comp_audio = mpy.CompositeAudioClip([music, clip.audio.fx(volumex, 1.2)])
 		comp_audio = comp_audio.set_duration(clip.duration).set_fps(AUDIO_FPS)
 		clip = clip.set_audio(comp_audio)
 		print("final_clip duration {}".format(clip.duration))
@@ -199,9 +201,15 @@ class Video:
 							align='center')
 			text_height = t_clip.size[1]
 			# Add speech
-			speech = gTTS(t, lang='en')
-			speech.save(audio_path + f"speech_{i}.mp3")
-			speech_clip = mpy.AudioFileClip(audio_path + f"speech_{i}.mp3")
+			#speech = gTTS(t, lang='en')
+			#speech.save(audio_path + f"speech_{i}.mp3")
+			#speech_clip = mpy.AudioFileClip(audio_path + f"speech_{i}.mp3")
+
+			gtts_client = get_authenticated_tts_client()
+			speech_clip = google_text_to_speech(
+							gtts_client, t, file_path = audio_path + f"speech_{i}.mp3", 
+							voice_name ="en-US-Neural2-D" #"en-US-Wavenet-B", #"en-US-Studio-M"
+						)
 			
 			# Add a 1 second pause at the end of each speech clip
 			empty_clip = AudioClip(lambda t: 0, duration=0.75)
@@ -211,6 +219,11 @@ class Video:
 			# Add effects
 			# t_clip = t_clip.fx(vfx.fadeout, 0.75)
 			#t_clip = t_clip.set_opacity(0.85)
+
+			# Add text to 1080x1920 transparent background
+			empty_bg = ColorClip(SIZE, color=(0, 0, 0)).set_opacity(0)
+			t_clip = t_clip.set_position(("center", 0.18*SIZE[1]))
+			t_clip = CompositeVideoClip([empty_bg, t_clip], use_bgclip = True)
 
 			text_clips.append(t_clip)
 			
